@@ -2119,7 +2119,9 @@ static bool IsKeyPressedMap(ImGuiKey key, bool repeat)
 bool ImGui::IsKeyPressed(int key_index, bool repeat)
 {
     ImGuiState& g = GImGui;
-    IM_ASSERT(key_index >= 0 && key_index < IM_ARRAYSIZE(g.IO.KeysDown));
+    IM_ASSERT(key_index >= 0);
+    if(key_index >= IM_ARRAYSIZE(g.IO.KeysDown)) return false;
+    
     const float t = g.IO.KeysDownTime[key_index];
     if (t == 0.0f)
         return true;
@@ -2407,7 +2409,7 @@ bool ImGui::Begin(const char* name, bool* p_opened, ImVec2 size, float fill_alph
     if (first_begin_of_the_frame)
     {
         window->DrawList->Clear();
-        window->DrawList->PushTextureID(g.Font->ContainerAtlas->TexID);
+        window->DrawList->PushTextureID((void *)g.Font->ContainerAtlas->TexID);
         window->Visible = true;
 
         // New windows appears in front
@@ -2720,7 +2722,7 @@ bool ImGui::Begin(const char* name, bool* p_opened, ImVec2 size, float fill_alph
     else
     {
         // Short path when we do multiple Begin in the same frame.
-        window->DrawList->PushTextureID(g.Font->ContainerAtlas->TexID);
+      window->DrawList->PushTextureID((void *)g.Font->ContainerAtlas->TexID);
 
         // Outer clipping rectangle
         if ((flags & ImGuiWindowFlags_ChildWindow) && !(flags & ImGuiWindowFlags_ComboBox))
@@ -2846,7 +2848,7 @@ void ImGui::PushFont(ImFont* font)
 
     SetFont(font);
     g.FontStack.push_back(font);
-    g.CurrentWindow->DrawList->PushTextureID(font->ContainerAtlas->TexID);
+    g.CurrentWindow->DrawList->PushTextureID((void *)font->ContainerAtlas->TexID);
 }
 
 void  ImGui::PopFont()
@@ -6253,7 +6255,7 @@ void ImDrawList::AddText(ImFont* font, float font_size, const ImVec2& pos, ImU32
     if (text_end == NULL)
         text_end = text_begin + strlen(text_begin);
 
-    IM_ASSERT(font->ContainerAtlas->TexID == texture_id_stack.back());  // Use high-level ImGui::PushFont() or low-level ImDrawList::PushTextureId() to change font.
+    IM_ASSERT((unsigned long)font->ContainerAtlas->TexID == (unsigned long)texture_id_stack.back());  // Use high-level ImGui::PushFont() or low-level ImDrawList::PushTextureId() to change font.
 
     // reserve vertices for worse case
     const unsigned int char_count = (unsigned int)(text_end - text_begin);
@@ -7642,7 +7644,7 @@ void ImGui::ShowTestWindow(bool* opened)
             ImVec2 tex_screen_pos = ImGui::GetCursorScreenPos();
             float tex_w = (float)ImGui::GetIO().Fonts->TexWidth;
             float tex_h = (float)ImGui::GetIO().Fonts->TexHeight;
-            ImTextureID tex_id = ImGui::GetIO().Fonts->TexID;
+            ImTextureID tex_id = (void *)ImGui::GetIO().Fonts->TexID;
             ImGui::Image(tex_id, ImVec2(tex_w, tex_h), ImVec2(0,0), ImVec2(1,1), 0xFFFFFFFF, 0x999999FF);
             if (ImGui::IsItemHovered())
             {

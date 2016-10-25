@@ -774,7 +774,7 @@ struct ImFontAtlas
     // RGBA32 format is provided for convenience and high compatibility, but note that all RGB pixels are white, so 75% of the memory is wasted.
     IMGUI_API void              GetTexDataAsAlpha8(unsigned char** out_pixels, int* out_width, int* out_height, int* out_bytes_per_pixel = NULL);  // 1 byte per-pixel
     IMGUI_API void              GetTexDataAsRGBA32(unsigned char** out_pixels, int* out_width, int* out_height, int* out_bytes_per_pixel = NULL);  // 4 bytes-per-pixel
-    IMGUI_API void              SetTexID(void* id)  { TexID = id; }
+    IMGUI_API void              SetTexID(unsigned int id)  { TexID = id; }
 
     // Helpers to retrieve list of common Unicode ranges (2 value per range, values are inclusive, zero-terminated list)
     // (Those functions could be static, aren't so simple use case doesn't have to refer to the ImFontAtlas:: type ever if in their code)
@@ -784,7 +784,7 @@ struct ImFontAtlas
 
     // Members
     // (Access texture data via GetTexData*() calls which will setup a default font for you.)
-    void*                       TexID;              // User data to refer to the texture once it has been uploaded to user's graphic systems. It ia passed back to you during rendering.
+    unsigned long                       TexID;              // User data to refer to the texture once it has been uploaded to user's graphic systems. It ia passed back to you during rendering.
     unsigned char*              TexPixelsAlpha8;    // 1 component per pixel, each component is unsigned 8-bit. Total size = TexWidth * TexHeight
     unsigned int*               TexPixelsRGBA32;    // 4 component per pixel, each component is unsigned 8-bit. Total size = TexWidth * TexHeight * 4
     int                         TexWidth;

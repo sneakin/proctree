@@ -25,10 +25,13 @@
 *
 */
 
+#include <string>
+#include <iostream>
 #include "happytree.h"
 
 void exporth()
 {
+#ifdef WINDOWS_VERSION
 	SDL_SysWMinfo sysinfo;
 	SDL_VERSION(&sysinfo.version);
 	SDL_GetWMInfo(&sysinfo);
@@ -53,10 +56,17 @@ void exporth()
 	{
 		export_h(temp);
 	}
+#else
+  std::string temp;
+  std::cout << "Save file to: ";
+  std::cin >> temp;
+  export_h(temp.c_str());
+#endif
 }
 
 void exportobj()
 {
+#ifdef WINDOWS_VERSION
 	SDL_SysWMinfo sysinfo;
 	SDL_VERSION(&sysinfo.version);
 	SDL_GetWMInfo(&sysinfo);
@@ -81,10 +91,17 @@ void exportobj()
 	{
 		export_obj(temp);
 	}
+#else
+  std::string temp;
+  std::cout << "Save file to: ";
+  std::cin >> temp;
+  export_obj(temp.c_str());
+#endif
 }
 
 int loadcustomtexture(int &aTexHandle, int aClamp)
 {
+#ifdef WINDOWS_VERSION
 	SDL_SysWMinfo sysinfo;
 	SDL_VERSION(&sysinfo.version);
 	SDL_GetWMInfo(&sysinfo);
@@ -111,10 +128,18 @@ int loadcustomtexture(int &aTexHandle, int aClamp)
 		return 1;
 	}
 	return 0;
+#else
+  std::string temp;
+  std::cout << "Load custom texture from: ";
+  std::cin >> temp;
+  aTexHandle = load_texture(temp.c_str(), aClamp);
+  return 1;
+#endif
 }
 
 void loadproject()
 {
+#ifdef WINDOWS_VERSION
 	SDL_SysWMinfo sysinfo;
 	SDL_VERSION(&sysinfo.version);
 	SDL_GetWMInfo(&sysinfo);
@@ -139,10 +164,17 @@ void loadproject()
 	{
 		load_htr(temp);
 	}
+#else
+  std::string temp;
+  std::cout << "Load project from: ";
+  std::cin >> temp;
+  load_htr(temp.c_str());
+#endif
 }
 
 void saveproject()
 {
+#ifdef WINDOWS_VERSION
 	SDL_SysWMinfo sysinfo;
 	SDL_VERSION(&sysinfo.version);
 	SDL_GetWMInfo(&sysinfo);
@@ -167,9 +199,15 @@ void saveproject()
 	{
 		save_htr(temp);
 	}
+#else
+  std::string temp;
+  std::cout << "Save project to: ";
+  std::cin >> temp;
+  save_htr(temp.c_str());
+#endif
 }
 
-void export_obj(char *aFilename)
+void export_obj(const char *aFilename)
 {
 	FILE *f;
 	f = fopen(aFilename, "wb");
@@ -219,7 +257,7 @@ void export_obj(char *aFilename)
 	fclose(f);
 }
 
-void export_h(char *aFilename)
+void export_h(const char *aFilename)
 {
 	FILE * f = fopen(aFilename, "w");
 	if (!f) return;
@@ -272,7 +310,7 @@ void export_h(char *aFilename)
 	fclose(f);
 }
 
-void load_htr(char *aFilename)
+void load_htr(const char *aFilename)
 {
 	FILE *f = fopen(aFilename, "rb");
 	if (!f) return;
@@ -281,7 +319,11 @@ void load_htr(char *aFilename)
 	if (sig != 0x00525448)
 	{
 		fclose(f);
+#ifdef WINDOWS_VERSION
 		MessageBoxA(NULL, "Error loading file: signature not recognized.", "Error loading file", MB_ICONERROR);
+#else
+    std::cerr << "Error loading file: signature not recognized." << std::endl;
+#endif
 		return;
 	}
 	fread(&gTree.mProperties.mClumpMax, 1, sizeof(float), f);
@@ -309,7 +351,7 @@ void load_htr(char *aFilename)
 	fclose(f);
 }
 
-void save_htr(char *aFilename)
+void save_htr(const char *aFilename)
 {
 	FILE *f = fopen(aFilename, "wb");
 	if (!f) return;
@@ -340,7 +382,7 @@ void save_htr(char *aFilename)
 	fclose(f);
 }
 
-char * loadfile(char *aFilename, int &aLen)
+char * loadfile(const char *aFilename, int &aLen)
 {
 	// There's some bit of code that every programmer finds themselves rewriting over
 	// and over and over and OVER again. For myself, it's this. I've written this function

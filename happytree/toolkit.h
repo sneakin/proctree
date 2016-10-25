@@ -54,7 +54,7 @@
 
 
 #ifdef LINUX_VERSION
-#include <SDL/SDL.h>
+#include <SDL2/SDL.h>
 #include "stb_image.h"
 #include "GLee.h"
 #include <GL/gl.h>
@@ -123,11 +123,12 @@ enum keystates
 #define M_PI 3.1415926535897932384626433832795
 #endif
 
+extern SDL_Window *window;
 extern int gScreenWidth, gScreenHeight;
 
 void initvideo(int argc);
 
-GLuint load_texture(char * aFilename, int clamp = 1);
+GLuint load_texture(const char * aFilename, int clamp = 1);
 void reload_textures();
 
 

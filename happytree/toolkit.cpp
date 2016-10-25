@@ -17,16 +17,16 @@ texpair * gTextureStore = NULL;
 int gTextureStoreSize = 0;
 
 
+SDL_Window *window = NULL;
+SDL_GLContext glcontext;
+
 void initvideo(int argc)
 {
-    const SDL_VideoInfo *info = NULL;
+    SDL_DisplayMode info;
     int bpp = 0;
     int flags = 0;
 
-    info = SDL_GetVideoInfo();
-
-    if (!info) 
-    {
+    if(SDL_GetCurrentDisplayMode(0, &info) < 0) {
         fprintf(stderr, "Video query failed: %s\n", SDL_GetError());
         SDL_Quit();
         exit(0);
@@ -46,10 +46,10 @@ void initvideo(int argc)
 
     if (fsflag) 
     {
-        gScreenWidth = info->current_w;
-        gScreenHeight = info->current_h;
-        bpp = info->vfmt->BitsPerPixel;
-        flags = SDL_OPENGL | SDL_FULLSCREEN;
+        gScreenWidth = info.w;
+        gScreenHeight = info.h;
+        bpp = SDL_BITSPERPIXEL(info.format);
+        flags = SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN;
     }
     else
     {
@@ -62,10 +62,10 @@ void initvideo(int argc)
             gScreenWidth = DESIRED_WINDOW_WIDTH;
             gScreenHeight = DESIRED_WINDOW_HEIGHT;
         }
-        bpp = info->vfmt->BitsPerPixel;
-        flags = SDL_OPENGL;
+        bpp = SDL_BITSPERPIXEL(info.format);
+        flags = SDL_WINDOW_OPENGL;
 #ifdef RESIZABLE_WINDOW
-        flags |= SDL_RESIZABLE;
+        flags |= SDL_WINDOW_RESIZABLE;
 #endif
     }
 
@@ -75,8 +75,10 @@ void initvideo(int argc)
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-    if (SDL_SetVideoMode(gScreenWidth, gScreenHeight, bpp, flags) == 0) 
-    {
+    window = SDL_CreateWindow("HappyTree", 0, 0, gScreenWidth, gScreenHeight, flags);
+    if(window) {
+      glcontext = SDL_GL_CreateContext(window);
+    } else {
         fprintf( stderr, "Video mode set failed: %s\n", SDL_GetError());
         SDL_Quit();
         exit(0);
@@ -129,7 +131,7 @@ char * mystrdup(const char *aString)
 	return d;
 }
 
-GLuint load_texture(char * aFilename, int clamp)
+GLuint load_texture(const char * aFilename, int clamp)
 {
     // First check if we have loaded this texture already
 	int i, j, w, h, n;

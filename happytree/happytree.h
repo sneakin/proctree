@@ -25,9 +25,11 @@
 *
 */
 
+#ifdef WIN32
 #include <Windows.h> // file i/o dialogs
+#endif /* WIN32 */
 #include "toolkit.h"
-#include "SDL_syswm.h"
+#include <SDL2/SDL_syswm.h>
 #include "../proctree/proctree.h"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -110,11 +112,11 @@ void exporth();
 int loadcustomtexture(int &aTexHandle, int aClamp);
 void saveproject();
 void loadproject();
-void export_obj(char *aFilename);
-void export_h(char *aFilename);
-void load_htr(char *aFilename);
-void save_htr(char *aFilename);
-char * loadfile(char *aFilename, int &aLen);
+void export_obj(const char *aFilename);
+void export_h(const char *aFilename);
+void load_htr(const char *aFilename);
+void save_htr(const char *aFilename);
+char * loadfile(const char *aFilename, int &aLen);
 void init_gl_resources();
 void calc_shadowmatrix();
 void setup_shadow();

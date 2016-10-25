@@ -26,6 +26,10 @@
 */
 #include "happytree.h"
 
+#ifndef WINDOWS_VERSION
+#include <dirent.h>
+#endif
+
 char *gTwigTextureName[MAXTEXTURES];
 int gTwigTexture[MAXTEXTURES];
 int gTwigTextureCount = 0;
@@ -45,12 +49,12 @@ int gLightingMode = 1;
 int gShadowMode = 1;
 int gAnimateLight = 0;
 float gSkyColor[3] = { 70 / 256.0f, 112 / 256.0f, 175 / 256.0f };
-glm::vec3 gLightDir = { 1, 1, 0 };
+glm::vec3 gLightDir(1, 1, 0);
 glm::mat4 mat_proj;
 glm::mat4 mat_modelview;
 glm::mat4 mat_shadow;
 
-glm::vec3 gCamRotate = { 0, 0.2, 20 };
+glm::vec3 gCamRotate(0, 0.2, 20);
 
 GLuint gVertVBO = 0;
 GLuint gNormalVBO = 0;
@@ -111,8 +115,7 @@ void progress()
 	glVertex2f(sin(f) * 0.1 + 0, cos(f) * 0.1 + 0); f += 3.14 * 4 / 3;
 	glVertex2f(sin(f) * 0.1 + 0, cos(f) * 0.11 + 0);
 	glEnd();
-	SDL_GL_SwapBuffers();
-	
+	SDL_GL_SwapWindow(window);
 }
 
 
@@ -190,14 +193,16 @@ void process_events()
     {	
 		switch (event.type)
 		{
+    case SDL_TEXTINPUT:
+      if(strlen(event.text.text) == 1) {
+        gUIState.keychar = event.text.text[0];
+      }
+      break;
 		case SDL_KEYDOWN:
 			handle_key(event.key.keysym.sym, 1);
 			// If a key is pressed, report it to the widgets
 			gUIState.keyentered = event.key.keysym.sym;
 			gUIState.keymod = event.key.keysym.mod;
-			// if key is ASCII, accept it as character input
-			if ((event.key.keysym.unicode & 0xFF80) == 0)
-				gUIState.keychar = event.key.keysym.unicode & 0x7f;
 			break;
 		case SDL_KEYUP:
 			handle_key(event.key.keysym.sym, 0);
@@ -238,12 +243,16 @@ void process_events()
 			SDL_Quit();
 			exit(0);
 			break;
-		case SDL_VIDEORESIZE:
-			gScreenWidth = event.resize.w;
-			gScreenHeight = event.resize.h;				
-			initvideo(0);
-			init_gl_resources();
-			break;
+		case SDL_WINDOWEVENT:
+      switch(event.window.event) {
+      case SDL_WINDOWEVENT_RESIZED:
+        gScreenWidth = event.window.data1;
+        gScreenHeight = event.window.data2;				
+        initvideo(0);
+        init_gl_resources();
+        break;
+      }
+      break;
 		}
     }
 }
@@ -648,7 +657,7 @@ void draw_screen()
 	ImGui::Render();
 
     //SDL_Delay(10);
-	SDL_GL_SwapBuffers();
+	SDL_GL_SwapWindow(window);
 }
 
 
@@ -702,6 +711,7 @@ int imageExists(char *aBaseFilename, int aTwig)
 
 void findtextures(char *aBaseDir, int aTwig)
 {
+#ifdef WINDOWS_VERSION
 	WIN32_FIND_DATAA fdFile;
 	HANDLE h = NULL;
 
@@ -728,7 +738,36 @@ void findtextures(char *aBaseDir, int aTwig)
 	while (FindNextFileA(h, &fdFile)); 
 
 	FindClose(h);
+#else
+	char path[2048];
+	sprintf(path, "%s\\*.*", aBaseDir);
 
+  DIR *dir = opendir(path);
+  if(dir == NULL) {
+    return;
+  }
+  
+  dirent *ent = readdir(dir);
+  
+	if (ent == NULL)
+		return;
+
+	do
+	{
+		if (strcmp(ent->d_name, ".") != 0 &&
+        strcmp(ent->d_name, "..") != 0)
+		{
+			if (ent->d_type == DT_DIR)
+			{				
+				sprintf(path, "%s\\%s\\diffuse", aBaseDir, ent->d_name);
+				imageExists(path, aTwig);
+			}
+		}
+	} 
+	while ((ent = readdir(dir)) != NULL); 
+
+  closedir(dir);
+#endif
 }
 
 
@@ -785,7 +824,7 @@ int main(int argc, char** args)
     initvideo(argc);
 
 	// set window title
-	SDL_WM_SetCaption(TITLE " - http://iki.fi/sol/", NULL);
+    //SDL_WM_SetCaption(TITLE " - http://iki.fi/sol/", NULL);
 
 	progress();
 
@@ -795,9 +834,10 @@ int main(int argc, char** args)
 	initGraphicsAssets();
 
 	// For imgui - Enable keyboard repeat to make sliders more tolerable
-	SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
+	//SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
 	// For imgui - Enable keyboard UNICODE processing for the text field.
-	SDL_EnableUNICODE(1);
+	//SDL_EnableUNICODE(1);
+  SDL_StartTextInput();
 
    
 

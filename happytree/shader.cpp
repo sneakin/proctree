@@ -24,6 +24,10 @@
 *************************************
 *
 */
+#ifndef WINDOWS_VERSION
+#include <iostream>
+#endif
+
 #include "happytree.h"
 
 Shader::Shader()
@@ -71,7 +75,11 @@ void Shader::build()
 	{
 		char temp[2048];
 		glGetProgramInfoLog(mShaderHandle, 2048, &status, temp);
+#ifdef WINDOWS_VERSION
 		MessageBoxA(NULL, temp, "Shader link failure", MB_ICONERROR);
+#else
+		std::cerr << "Shader link failure: " << temp << std::endl;
+#endif
 	}
 }
 
